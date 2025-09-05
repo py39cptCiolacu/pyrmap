@@ -28,7 +28,7 @@ data_file_cw <- function(data, data_file_size) {
     close(con)
 
     con <- file(DATA_FILE, "r+b")
-    writeBin(as.numeric(data, data_file_size), con, size = 4)                  
+    writeBin(as.numeric(data), con, size = 4)                  
     close(con)
 }
 
@@ -50,25 +50,31 @@ result_file_r <- function() {
     return(result)
 }
 
-cleanup <- function() {
-    file.remove(DATA_FILE)
+cleanup <- function(delete_data_file) {
+
+    if (isTRUE(delete_data_file)){
+        file.remove(DATA_FILE)
+    }
+
     file.remove(METADATA_FILE)
     file.remove(RESULT_FILE)
 }
 
-run_python <- function(data, python_script_path) {
+run_python <- function(data, python_script_path, delete_data_file = TRUE, create_data_file = TRUE) {
     library(processx)
+    
     input_size <- length(data)
-        
     metadata_file_cw(input_size)
-    data_file_cw(data, 4*input_size)
-
+    
+    if (isTRUE(create_data_file)){
+        data_file_cw(data, 4*input_size)
+    }
     processx::run("python3", args = python_script_path)
-    #Sys.sleep(0.2)
+    Sys.sleep(0.2)
     
     result = result_file_r()
 
-    cleanup()
+    cleanup(delete_data_file)
 
     return(result)
 }
