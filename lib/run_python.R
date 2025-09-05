@@ -32,8 +32,8 @@ data_file_cw <- function(data, data_file_size) {
     close(con)
 }
 
-result_file_r <- function() {
-    
+get_result_file_size <- function() {
+
     con <- file(METADATA_FILE, "rb")
     raw_metadata <- readBin(con, "raw", n = METADATA_FILE_SIZE)
     close(con)
@@ -43,6 +43,13 @@ result_file_r <- function() {
     
     result_size = readBin(raw_metadata[13:16], "integer", size = 4, endian = "little")
 
+    return(result_size)
+}
+
+result_file_r <- function() {
+    
+    result_size <- get_result_file_size()
+
     con <- file(RESULT_FILE, "rb")
     result <- readBin(con, "numeric", size = 4, n = result_size, endian = "little")
     close(con)
@@ -50,31 +57,74 @@ result_file_r <- function() {
     return(result)
 }
 
-cleanup <- function(delete_data_file) {
-
-    if (isTRUE(delete_data_file)){
+cleanup <- function() {
+    
+    if (file.exists(DATA_FILE)) {
         file.remove(DATA_FILE)
     }
-
-    file.remove(METADATA_FILE)
-    file.remove(RESULT_FILE)
+    if (file.exists(METADATA_FILE)) {
+        file.remove(METADATA_FILE)
+    }
+    if (file.exists(RESULT_FILE)) {
+        file.remove(RESULT_FILE)
+    }
 }
 
-run_python <- function(data, python_script_path, delete_data_file = TRUE, create_data_file = TRUE) {
+
+run_python <- function(data, python_script_path) {
+
     library(processx)
-    
     input_size <- length(data)
+
     metadata_file_cw(input_size)
-    
-    if (isTRUE(create_data_file)){
-        data_file_cw(data, 4*input_size)
-    }
+    data_file_cw(data, 4*input_size)
+
     processx::run("python3", args = python_script_path)
-    Sys.sleep(0.2)
-    
     result = result_file_r()
 
-    cleanup(delete_data_file)
+    cleanup()
+    return(result)
+}
 
+run_python_shared_data <- function(data, python_scripts_paths) {
+    library(processx)
+    results <- c()
+
+    input_size <- length(data)
+    metadata_file_cw(input_size) #change this to a flag change only
+    data_file_cw(data, 4*input_size)
+    
+    for (python_script_path in python_scripts_paths) {
+        processx::run("python3", args = python_script_path)
+        
+        result <- result_file_r()
+        results <- c(results, result)
+        file.remove(RESULT_FILE)
+
+        metadata_file_cw(input_size) #change this to a flag change only
+    }
+
+    cleanup()
+    return(results)
+}
+
+run_python_pipeline <- function(initial_data, python_scripts_paths) {
+    library(processx)
+    initial_input_size <- length(initial_data)
+    metadata_file_cw(initial_input_size)
+    data_file_cw(initial_data, 4*initial_input_size)
+
+    for (python_script_path in python_scripts_paths) {
+        processx::run("python3", args = python_script_path)
+        result <- result_file_r()
+        
+        file.remove(METADATA_FILE)
+        
+        temp_data_file_size <- length(result)
+        metadata_file_cw(temp_data_file_size)
+        file.rename(RESULT_FILE, DATA_FILE)
+    }
+    
+    cleanup()
     return(result)
 }
