@@ -16,7 +16,7 @@ input_data <- c(as.vector(t(X)), y)
 result <- run_python(
     data = input_data,
     python_script_path= python_script_path,
-    dtype = 3
 )
 
+print(result)
 

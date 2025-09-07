@@ -6,7 +6,6 @@ python_script_path_sum <- "/home/shared_memory/pyrmap/example/sklearn_script.py"
 result <- run_python(
     data = input_data,
     python_script_path=python_script_path_sum,
-    dtype=1
 )
 
 print(result)

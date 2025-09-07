@@ -8,6 +8,14 @@ METADATA_FILE_SIZE <- 8 + 4 + 4 + 4
 # w - write
 # d - delete
 
+dtype_dict <- c(
+    "float32" = 1,
+    "float64" = 2,
+    "int32" = 3,
+    "int64" = 4,
+    "uint8" = 5
+)
+
 metadata_file_cw <- function(input_size, dtype) {
 
     con <- file(METADATA_FILE, "wb")
@@ -17,7 +25,7 @@ metadata_file_cw <- function(input_size, dtype) {
     con <- file(METADATA_FILE, "r+b")
     writeBin(as.integer(0), con, size = 8)  # flag
     writeBin(as.integer(input_size), con, size = 4) #input size
-    writeBin(as.integer(dtype), con, size = 4) # dtype
+    writeBin(as.integer(dtype_dict[[dtype]]), con, size = 4) # dtype
     writeBin(as.integer(0), con, size = 4) # result (0 for now, cause we dont know) - this might do nothing 
     close(con)
 }
@@ -28,22 +36,20 @@ data_file_cw <- function(data, data_file_size, dtype) {
     writeBin(rep(as.raw(0), data_file_size), con)
     close(con)
     
+    dtype_size <- get_size_per_type(dtype)
     con <- file(DATA_FILE, "r+b")
-    
-    if (dtype == 1){
-        writeBin(as.numeric(data), con, size = 4)                  
+
+    if (grepl("^int", dtype)){
+        writeBin(as.integer(data), con, size = dtype_size)                  
     }
-    else if (dtype == 2){
-        writeBin(as.numeric(data), con, size = 8)                  
+    else if (grepl("^float", dtype)){
+        writeBin(as.numeric(data), con, size = dtype_size)          
     }
-    else if (dtype == 3){
-        writeBin(as.integer(data), con, size = 4)                  
+    else if (grepl("^uint", dtype)){
+        writeBin(as.raw(data), con, size = dtype_size)
     }
-    else if (dtype == 4){
-        writeBin(as.integer(data), con, size = 8)                  
-    }
-    else if (dtype == 5){
-        writeBin(as.raw(data), con, size = 1)
+    else{
+        stop("Given type is not valid!")
     }
 
     close(con)
@@ -63,20 +69,21 @@ get_result_file_size <- function() {
     return(result_size)
 }
 
-result_file_r <- function(dtype, dtype_size) {
+result_file_r <- function(dtype) {
     
     result_size <- get_result_file_size()
+    dtype_size <- get_size_per_type(dtype)
 
     con <- file(RESULT_FILE, "rb")
-
-    if (dtype == 1 || dtype == 2){
+        
+    if (grepl("^int", dtype) || grepl("^uint", dtype)){
+        result <- readBin(con, "integer", size = dtype_size, n = result_size, endian = "little")
+    }
+    else if (grepl("^float", dtype)){
         result <- readBin(con, "numeric", size = dtype_size, n = result_size, endian = "little")
     }
-    else if (dtype == 3 || dtype == 4){
-        result <- readBin(con, "integer", size = dtype_size, n = result_size, endian = "little")
-    }
-    else if (dtype == 5){
-        result <- readBin(con, "integer", size = dtype_size, n = result_size, endian = "little")
+    else{
+        stop("Given type is not valid!")
     }
     close(con)
 
@@ -97,22 +104,14 @@ cleanup <- function() {
 }
 
 get_size_per_type <-function(dtype) {
-    if (dtype == 1){
+
+    if (endsWith(dtype, "32")){
         return(4)
-    }
-    else if (dtype == 2){
+    }else if (endsWith(dtype, "64")){
         return(8)
-    }
-    else if (dtype == 3){
-        return(4)
-    }
-    else if (dtype == 4){
-        return(8)
-    }
-    else if (dtype == 5){
+    }else if (endsWith(dtype, "8")){
         return(1)
-    }
-    else{
-        return(-1)
+    }else{
+        stop("Given type is not valid!")
     }
 }

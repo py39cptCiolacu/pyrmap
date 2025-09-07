@@ -4,7 +4,7 @@ DATA_FILE <- "data.bin"
 RESULT_FILE <- "result.bin"
 METADATA_FILE <- "metadata.bin"
 
-run_python <- function(data, python_script_path, dtype=1) {
+run_python <- function(data, python_script_path, dtype="float32") {
 
     library(processx)
     input_size <- length(data)
@@ -20,13 +20,13 @@ run_python <- function(data, python_script_path, dtype=1) {
     data_file_cw(data, dtype_size*input_size, dtype)
 
     processx::run("python3", args = python_script_path)
-    result = result_file_r(dtype, dtype_size)
+    result = result_file_r(dtype)
 
     cleanup()
     return(result)
 }
 
-run_python_shared_data <- function(data, python_scripts_paths, dtype=1) {
+run_python_shared_data <- function(data, python_scripts_paths, dtype="float32") {
     library(processx)
     results <- c()
 
@@ -38,7 +38,7 @@ run_python_shared_data <- function(data, python_scripts_paths, dtype=1) {
     for (python_script_path in python_scripts_paths) {
         processx::run("python3", args = python_script_path)
         
-        result <- result_file_r(dtype, dtype_size)
+        result <- result_file_r(dtype)
         results <- c(results, result)
         file.remove(RESULT_FILE)
 
@@ -49,7 +49,7 @@ run_python_shared_data <- function(data, python_scripts_paths, dtype=1) {
     return(results)
 }
 
-run_python_pipeline <- function(initial_data, python_scripts_paths, dtype=1) {
+run_python_pipeline <- function(initial_data, python_scripts_paths, dtype="float32") {
     library(processx)
     initial_input_size <- length(initial_data)
 
@@ -59,7 +59,7 @@ run_python_pipeline <- function(initial_data, python_scripts_paths, dtype=1) {
 
     for (python_script_path in python_scripts_paths) {
         processx::run("python3", args = python_script_path)
-        result <- result_file_r(dtype, dtype_size)
+        result <- result_file_r(dtype)
         
         file.remove(METADATA_FILE)
         
