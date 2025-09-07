@@ -6,7 +6,8 @@ python_script_path_product <- "/home/shared_memory/pyrmap/example/product.py"
 
 results <- run_python_shared_data(
     data = input_data,
-    python_scripts_paths = c(python_script_path_sum, python_script_path_product)
+    python_scripts_paths = c(python_script_path_sum, python_script_path_product),
+    dtype = 1
 )
 
 print(paste("SUM", results))
