@@ -1,8 +1,8 @@
 source("/home/shared_memory/pyrmap/lib/file_manipulation.R")
 
-DATA_FILE <- "data.bin"
-RESULT_FILE <- "result.bin"
-METADATA_FILE <- "metadata.bin"
+DATA_FILE <- "/tmp/data.bin"
+RESULT_FILE <- "/tmp/result.bin"
+METADATA_FILE <- "/tmp/metadata.bin"
 
 run_python <- function(data, python_script_path, dtype="float32") {
 
