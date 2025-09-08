@@ -3,8 +3,8 @@ import struct
 import numpy as np
 from lib.metadata_manipulation import get_metadata_info, calculate_result_size, write_result_size 
 
-DATA_FILE = "data.bin"
-RESULT_FILE = "result.bin"
+DATA_FILE = "/tmp/data.bin"
+RESULT_FILE = "/tmt/result.bin"
 
 def process_via_mmap(func):
     input_size, dtype = get_metadata_info()
