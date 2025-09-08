@@ -115,3 +115,9 @@ PyRMap relies on the Linux `mmap` system call to allow R and Python processes to
 - Python and R are not "aware" of each other's mappings. They simply open and map the same file path.
 - The Linux kernel ensures that the mappings overlap in memory, enabling shared access.
 - Using `/dev/shm` (a tmpfs-backed directory) can further reduce overhead, since it is already backed by RAM. `/tmp` also works but may be slower if not mounted as `tmpfs`.
+
+---
+
+## License
+
+This project is licensed under the [Apache License 2.0][./LICENSE].
