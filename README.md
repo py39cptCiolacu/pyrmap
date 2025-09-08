@@ -92,3 +92,26 @@ Each Python script in the [`example`](example) folder demonstrates this usage.
 - Memory-mapped files for high performance  
 - Cleaner separation of processes compared to `reticulate` or `rpy2`  
 - Explicit handling of metadata for robust cross-language communication
+
+
+---
+
+## Under the Hood: How Memory Mapping Works
+
+PyRMap relies on the Linux `mmap` system call to allow R and Python processes to communicate via shared memory.
+
+### Key Concepts
+- **Memory mapping** (`mmap`) creates a mapping between a file on disk and a region of virtual memory.
+- When R writes to `DATA_FILE` and `METADATA_FILE`, the operating system loads their content into memory pages managed by the Linux kernel.
+- When Python opens and memory-maps the same files, the kernel does not reload them from disk.  
+  Instead, it provides access to the **same memory pages** that are already in RAM.
+
+### Why This Matters
+- **Zero-copy communication**: both R and Python read/write directly in the same memory pages.
+- **Synchronization by design**: any change written by one process becomes visible to the other without extra copying.
+- **Backed by files**: although the files are on disk (e.g., `/tmp/metadata.bin`), the actual operations happen in RAM. The files exist primarily so both processes can refer to the same memory region.
+
+### Important Notes
+- Python and R are not "aware" of each other's mappings. They simply open and map the same file path.
+- The Linux kernel ensures that the mappings overlap in memory, enabling shared access.
+- Using `/dev/shm` (a tmpfs-backed directory) can further reduce overhead, since it is already backed by RAM. `/tmp` also works but may be slower if not mounted as `tmpfs`.
