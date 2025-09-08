@@ -30,8 +30,8 @@ get_size_per_type <-function(dtype) {
 get_mmap_mode_per_type <- function(dtype){
     if (dtype == "int32") {return(int32())}
     if (dtype == "int64") {return(int64())}
-    if (dtype == "float32") {return(float32())}
-    if (dtype == "float64") {return(float64())}
+    if (dtype == "float32") {return(single())}
+    if (dtype == "float64") {return(double())}
     if (dtype == "uint8") {return(uint8())}
 }
 
