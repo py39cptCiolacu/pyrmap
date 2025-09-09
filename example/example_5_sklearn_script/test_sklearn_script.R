@@ -1,7 +1,7 @@
-source("/home/shared_memory/pyrmap/lib/run_python.R")
+source("../../lib/run_python.R")
 
 input_data <- c(1, 6, 14, 7)
-python_script_path_sum <- "/home/shared_memory/pyrmap/example/sklearn_script.py"
+python_script_path_sum <- "sklearn_script.py"
 
 result <- run_python(
     data = input_data,

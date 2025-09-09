@@ -1,6 +1,6 @@
-source("/home/shared_memory/pyrmap/lib/run_python.R")
+source("../../lib/run_python.R")
 
-python_script_path = "/home/shared_memory/pyrmap/example/sklearn_complex.py"
+python_script_path = "sklearn_complex.py"
 
 X <- matrix(c(
     0, 0,
