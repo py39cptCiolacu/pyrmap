@@ -113,6 +113,7 @@ Each Python script in the [`example`](example) folder demonstrates this usage.
 
 ## Notes and Limitations
 
+
 - PyRMap currently works only on **Linux**, since it relies on the `mmap` system call.  
 - At this stage, you cannot call a specific function inside a Python script — the entire file is executed.  
 - Intermediate results are not available when using `run_python_pipeline` (planned feature).  
@@ -133,4 +134,4 @@ Each Python script in the [`example`](example) folder demonstrates this usage.
 
 ## License
 
-This project is licensed under the [Apache License 2.0][./LICENSE].
+This project is licensed under the [Apache License 2.0]
