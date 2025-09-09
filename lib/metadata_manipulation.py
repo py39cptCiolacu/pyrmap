@@ -16,7 +16,7 @@ import numpy as np
 import struct
 import mmap
 
-METADATA_FILE = "/tmp/metadata.bin"
+METADATA_FILE = "/dev/shm/metadata.bin"
 METADATA_FILE_SIZE = 8 + 4 + 4 + 4 #8 for flag, 4 for data size, 4 for dtype, 4 for result size
 
 DTYPE_MAP = {

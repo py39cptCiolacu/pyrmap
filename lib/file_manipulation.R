@@ -14,9 +14,9 @@
 
 library(mmap)
 
-DATA_FILE <- "/tmp/data.bin"
-RESULT_FILE <- "/tmp/result.bin"
-METADATA_FILE <- "/tmp/metadata.bin"
+DATA_FILE <- "/dev/shm/data.bin"
+RESULT_FILE <- "/dev/shm/result.bin"
+METADATA_FILE <- "/dev/shm/metadata.bin"
 METADATA_FILE_SIZE <- 8 + 4 + 4 + 4 
 
 # c - create

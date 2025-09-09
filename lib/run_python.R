@@ -14,9 +14,9 @@
 
 source("/home/shared_memory/pyrmap/lib/file_manipulation.R")
 
-DATA_FILE <- "/tmp/data.bin"
-RESULT_FILE <- "/tmp/result.bin"
-METADATA_FILE <- "/tmp/metadata.bin"
+DATA_FILE <- "/dev/shm/data.bin"
+RESULT_FILE <- "/dev/shm/result.bin"
+METADATA_FILE <- "/dev/shm/metadata.bin"
 
 run_python <- function(data, python_script_path, dtype="float32") {
 
@@ -33,7 +33,7 @@ run_python <- function(data, python_script_path, dtype="float32") {
     dtype_size <- get_size_per_type(dtype)
     data_file_cw(data, dtype_size*input_size, dtype)
 
-    processx::run("python3", args = python_script_path)
+    processx::run("python3", args = python_script_path, env=c(SHM_DIR="/dev/shm", Sys.getenv()))
     result = result_file_r(dtype)
 
     cleanup()
