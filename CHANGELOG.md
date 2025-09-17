@@ -8,8 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for parallel execution in `run_python_shared_data`.
 - Add option to inspect intermediate results in pipeline mode.
 
+## [0.2.0] - 2025-09-17
+- introduced a new parameter - "path". Set to RAM, the DATA_FILE and RESULT_FILE will be stored in /dev/shm. Set to DISK will be stored in /home/pyrmap/storage
+
 ## [0.1.0] - 2025-09-08
-### Added
 - Initial release of PyRMap.
 - `run_python`, `run_python_shared_data`, and `run_python_pipeline` functions.
 - Basic R ↔ Python communication using `mmap`.

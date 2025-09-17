@@ -17,16 +17,16 @@ import struct
 import numpy as np
 from lib.metadata_manipulation import get_metadata_info, calculate_result_size, write_result_size 
 
-DATA_FILE = "/dev/shm/data.bin"
-RESULT_FILE = "/dev/shm/result.bin"
+DATA_FILE = "/data.bin"
+RESULT_FILE = "/result.bin"
 
 def process_via_mmap(func):
-    input_size, dtype = get_metadata_info()
+    input_size, dtype, path = get_metadata_info()
     dtype_size = np.dtype(dtype).itemsize
 
     def wrapper():
 
-        with open(DATA_FILE, "r+b") as f:
+        with open(f"{path}{DATA_FILE}", "r+b") as f:
 
             mm = mmap.mmap(f.fileno(), input_size * dtype_size)
             input_data = np.frombuffer(mm.read(dtype_size * input_size), dtype=dtype)
@@ -37,10 +37,10 @@ def process_via_mmap(func):
         result_size = calculate_result_size(output_data)
         write_result_size(result_size)
             
-        with open(RESULT_FILE, "wb") as f:
+        with open(f"{path}{RESULT_FILE}", "wb") as f:
             f.write(b"\x00" * (result_size * dtype_size))
 
-        with open(RESULT_FILE, "r+b") as f:
+        with open(f"{path}{RESULT_FILE}", "r+b") as f:
             
             mm = mmap.mmap(f.fileno(), result_size*dtype_size)
             mm.write(output_data.astype(dtype).tobytes())

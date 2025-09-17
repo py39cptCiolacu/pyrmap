@@ -12,68 +12,82 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-source("/home/shared_memory/pyrmap/lib/file_manipulation.R")
+source("../../lib/file_manipulation.R")
+source("../../lib/file_locations.R")
 
-DATA_FILE <- "/dev/shm/data.bin"
-RESULT_FILE <- "/dev/shm/result.bin"
 METADATA_FILE <- "/dev/shm/metadata.bin"
 
-run_python <- function(data, python_script_path, dtype="float32") {
+run_python <- function(data, python_script_path, dtype="float32", path = "RAM") {
 
     library(processx)
     input_size <- length(data)
     
+    if (path == "DISK") {
+        if (!dir.exists("/home/pyrmap")){
+            dir.create("/home/pyrmap")
+        }
+
+        if (!dir.exists("/home/pyrmap/storage")){
+            dir.create("/home/pyrmap/storage")
+        }
+    }
+
     # 1 = float32
     # 2 = float64
     # 3 = int32
     # 4 = int64
     # 5 = uint8
     
-    metadata_file_cw(input_size, dtype)  
+    metadata_file_cw(input_size, dtype, path)  
     dtype_size <- get_size_per_type(dtype)
-    data_file_cw(data, dtype_size*input_size, dtype)
+    data_file_cw(data, dtype_size*input_size, dtype, path)
 
     processx::run("python3", args = python_script_path, env=c(SHM_DIR="/dev/shm", Sys.getenv()))
-    result = result_file_r(dtype)
+    result = result_file_r(dtype, path)
 
-    cleanup()
+    cleanup(path)
     return(result)
 }
 
-run_python_shared_data <- function(data, python_scripts_paths, dtype="float32") {
+run_python_shared_data <- function(data, python_scripts_paths, dtype="float32", path="RAM") {
     library(processx)
     results <- c()
 
+    RESULT_FILE = get_result_file_path(path)
+    
     input_size <- length(data)
-    metadata_file_cw(input_size, dtype) #change this to a flag change only
+    metadata_file_cw(input_size, dtype, path) #change this to a flag change only
     dtype_size <- get_size_per_type(dtype)
-    data_file_cw(data, dtype_size*input_size, dtype)
+    data_file_cw(data, dtype_size*input_size, dtype, path)
     
     for (python_script_path in python_scripts_paths) {
         processx::run("python3", args = python_script_path)
         
-        result <- result_file_r(dtype)
+        result <- result_file_r(dtype, path)
         results <- c(results, result)
         file.remove(RESULT_FILE)
 
-        metadata_file_cw(input_size, dtype) #change this to a flag change only
+        metadata_file_cw(input_size, dtype, path) #change this to a flag change only
     }
 
-    cleanup()
+    cleanup(path)
     return(results)
 }
 
-run_python_pipeline <- function(initial_data, python_scripts_paths, dtype="float32") {
+run_python_pipeline <- function(initial_data, python_scripts_paths, dtype="float32", path="RAM") {
     library(processx)
     initial_input_size <- length(initial_data)
 
+    DATA_FILE = get_data_file_path(path)
+    RESULT_FILE = get_result_file_path(path)
+    
     dtype_size <- get_size_per_type(dtype)
-    metadata_file_cw(initial_input_size, dtype)
-    data_file_cw(initial_data, dtype_size*initial_input_size, dtype)
+    metadata_file_cw(initial_input_size, dtype, path)
+    data_file_cw(initial_data, dtype_size*initial_input_size, dtype, path)
 
     for (python_script_path in python_scripts_paths) {
         processx::run("python3", args = python_script_path)
-        result <- result_file_r(dtype)
+        result <- result_file_r(dtype, path)
         
         file.remove(METADATA_FILE)
         
@@ -82,6 +96,6 @@ run_python_pipeline <- function(initial_data, python_scripts_paths, dtype="float
         file.rename(RESULT_FILE, DATA_FILE)
     }
     
-    cleanup()
+    cleanup(path)
     return(result)
 }

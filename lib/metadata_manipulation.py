@@ -17,7 +17,7 @@ import struct
 import mmap
 
 METADATA_FILE = "/dev/shm/metadata.bin"
-METADATA_FILE_SIZE = 8 + 4 + 4 + 4 #8 for flag, 4 for data size, 4 for dtype, 4 for result size
+METADATA_FILE_SIZE = 8 + 4 + 4 + 4 + 4 #8 for flag, 4 for data size, 4 for dtype, 4 for path ,4 for result size
 
 DTYPE_MAP = {
         1: np.float32,
@@ -27,6 +27,11 @@ DTYPE_MAP = {
         5: np.uint8,
 }
 
+PATH_MAP = {
+        1: "/dev/shm",
+        2: "/home/pyrmap/storage",
+}
+
 def get_metadata_info():
 
     with open(METADATA_FILE, "r+b") as f:
@@ -34,12 +39,14 @@ def get_metadata_info():
         mm.seek(4)
         input_data_size = np.frombuffer(mm.read(4), dtype=np.int32)[0]
         dtype_code = np.frombuffer(mm.read(4), dtype=np.int32)[0]
+        path_code = np.frombuffer(mm.read(4), dtype=np.int32)[0]
     
         mm.close()
         
         dtype = DTYPE_MAP[dtype_code]
+        path = PATH_MAP[path_code]
 
-    return input_data_size, dtype
+    return input_data_size, dtype, path
 
 
 def calculate_result_size(output):
