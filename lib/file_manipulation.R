@@ -12,13 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+source("../../lib/file_locations.R")
+
+METADATA_FILE <- "/dev/shm/metadata.bin"
+METADATA_FILE_SIZE <- 8 + 4 + 4 + 4 + 4
+
 library(mmap)
-
-DATA_FILE <- "/tmp/data.bin"
-RESULT_FILE <- "/tmp/result.bin"
-METADATA_FILE <- "/tmp/metadata.bin"
-METADATA_FILE_SIZE <- 8 + 4 + 4 + 4 
-
 # c - create
 # r - read
 # w - write
@@ -31,7 +30,6 @@ dtype_dict <- c(
     "int64" = 4,
     "uint8" = 5
 )
-
 
 get_size_per_type <-function(dtype) {
 
@@ -49,7 +47,7 @@ get_mmap_mode_per_type <- function(dtype){
     if (dtype == "uint8") {return(uint8())}
 }
 
-metadata_file_cw <- function(input_size, dtype) {
+metadata_file_cw <- function(input_size, dtype, path) {
 
     con <- file(METADATA_FILE, "wb")
     writeBin(rep(as.raw(0), METADATA_FILE_SIZE), con)
@@ -57,20 +55,31 @@ metadata_file_cw <- function(input_size, dtype) {
         
     m <- mmap(METADATA_FILE, mode=int32(), prot = mmapFlags("PROT_READ", "PROT_WRITE"))
     if (is.null(m)) stop("Failed to mmap the metadata_file")
+    
+    if (path == "RAM") {
+        location_flag <- 1
+    }
+    
+    if (path == "DISK") {
+        location_flag <- 2
+    }
 
     m[1] <- 0                      # flag
     m[2] <- input_size             # input_size
     m[3] <- dtype_dict[[dtype]]    # dtype
-    m[4] <- 0                      # result_size (for now 0 - will be calculed and overwriten in python)
+    m[4] <- location_flag          # location flag: 1 RAM ; 2 - DISK
+    m[5] <- 0                      # result_size (for now 0 - will be calculed and overwriten in python)
 
     #flush(m)
     munmap(m)
    
 }
 
-data_file_cw <- function(data, data_file_size, dtype) {
-    # data_file_size - should be already calculated by multiplying len(data) with dtype_size
+data_file_cw <- function(data, data_file_size, dtype, path) {
+    
+    DATA_FILE <- get_data_file_path(path)
 
+    # data_file_size - should be already calculated by multiplying len(data) with dtype_size
     dtype_size <- get_size_per_type(dtype)
 
     con <- file(DATA_FILE, "wb")
@@ -97,8 +106,8 @@ data_file_cw <- function(data, data_file_size, dtype) {
     munmap(m)
 }
 
-get_result_file_size <- function() {
-
+get_result_file_size <- function(path) {
+    
     m <- mmap(METADATA_FILE, mode=int32(), prot = mmapFlags("PROT_READ"))
     
     metadata_flag <- m[1]
@@ -110,9 +119,11 @@ get_result_file_size <- function() {
 
 }
 
-result_file_r <- function(dtype) {
+result_file_r <- function(dtype, path) {
     
-    result_size <- get_result_file_size()
+    RESULT_FILE <- get_result_file_path(path)
+    
+    result_size <- get_result_file_size(path)
     dtype_size <- get_size_per_type(dtype)
     dtype_mmap_mode = get_mmap_mode_per_type(dtype)
 
@@ -123,7 +134,11 @@ result_file_r <- function(dtype) {
     return(result)
 }
 
-cleanup <- function() {
+cleanup <- function(path) {
+    
+    DATA_FILE <- get_data_file_path(path)
+    RESULT_FILE <- get_result_file_path(path)
+
     files <- c(DATA_FILE, METADATA_FILE, RESULT_FILE)
     for (f in files) if (file.exists(f)) file.remove(f)
 }

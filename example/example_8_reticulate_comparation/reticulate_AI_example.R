@@ -5,7 +5,7 @@ use_virtualenv("../../.venv", required = TRUE)
 np <- import("numpy")
 sklearn <- import("sklearn.linear_model")
 
-N <- 50e6
+N <- 200e6
 n_features <- 10
 n_samples <- N %/% (n_features + 1)
 
