@@ -1,7 +1,8 @@
 # PyRMap
 
-**PyRMap** is a tool designed to enable fast and clean communication between **R** and **Python** by leveraging the `mmap` system call.  
+PyRMap** is a tool designed to enable fast and clean communication between **R** and **Python** by leveraging the `mmap` system call.  
 Instead of relying on higher-overhead bridges like `reticulate` or `rpy2`, PyRMap shares data directly through memory-mapped files, backed by disk for persistence but effectively zero-copy between processes.
+
 ---
 
 ## Concept
@@ -10,6 +11,7 @@ PyRMap uses three shared binary files stored in `/tmp`:
 
 1. **`METADATA_FILE`**  
    Contains metadata describing the data exchange. Layout:
+   
    - **flag**:  
      - `0` → data prepared by R, ready for Python  
      - `1` → result prepared by Python, ready for R  
@@ -19,10 +21,10 @@ PyRMap uses three shared binary files stored in `/tmp`:
 
    > Note: *length* = number of elements, while *size* = length × element size in bytes.
 
-2. **`DATA_FILE`**  
+3. **`DATA_FILE`**  
    Contains the raw input data written by R.
 
-3. **`RESULT_FILE`**  
+4. **`RESULT_FILE`**  
    Contains the result data written by Python.
 
 Supported data types:
@@ -135,3 +137,4 @@ Each Python script in the [`example`](example) folder demonstrates this usage.
 ## License
 
 This project is licensed under the [Apache License 2.0]
+
