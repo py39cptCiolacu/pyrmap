@@ -56,7 +56,7 @@ run_python_shared_data <- function(data, python_scripts_paths, dtype="float32", 
     RESULT_FILE = get_result_file_path(path)
     
     input_size <- length(data)
-    metadata_file_cw(input_size, dtype, path) #change this to a flag change only
+    metadata_flag_edit_w(0)
     dtype_size <- get_size_per_type(dtype)
     data_file_cw(data, dtype_size*input_size, dtype, path)
     
@@ -67,14 +67,14 @@ run_python_shared_data <- function(data, python_scripts_paths, dtype="float32", 
         results <- c(results, result)
         file.remove(RESULT_FILE)
 
-        metadata_file_cw(input_size, dtype, path) #change this to a flag change only
+        metadata_flag_edit_w(0)
     }
 
     cleanup(path)
     return(results)
 }
 
-run_python_pipeline <- function(initial_data, python_scripts_paths, dtype="float32", path="RAM") {
+run_python_pipeline <- function(initial_data, python_scripts_paths, dtype="float32", path="RAM", required_intermediate_results=FALSE) {
     library(processx)
     initial_input_size <- length(initial_data)
 
@@ -85,17 +85,30 @@ run_python_pipeline <- function(initial_data, python_scripts_paths, dtype="float
     metadata_file_cw(initial_input_size, dtype, path)
     data_file_cw(initial_data, dtype_size*initial_input_size, dtype, path)
 
+    if (isTRUE(required_intermediate_results)) {
+        results <- c()
+    }
+
     for (python_script_path in python_scripts_paths) {
         processx::run("python3", args = python_script_path)
         result <- result_file_r(dtype, path)
         
+        if (isTRUE(required_intermediate_results)) {
+            results <- c(results, result)
+        }
+
         file.remove(METADATA_FILE)
         
         temp_data_file_size <- length(result)
-        metadata_file_cw(temp_data_file_size, dtype)
+        metadata_file_cw(temp_data_file_size, dtype, path)
         file.rename(RESULT_FILE, DATA_FILE)
     }
     
     cleanup(path)
+
+    if (isTRUE(required_intermediate_results)) {
+        return(results)
+    }
+
     return(result)
 }
