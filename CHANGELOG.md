@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for parallel execution in `run_python_shared_data`.
 - Add option to inspect intermediate results in pipeline mode.
 
+## [0.3.0] - 2025-10-17
+- introduced a new parater in run_pipelune function - required_intermediate_results, default FALSE
+- setting required_intermediate_results to TRUE, will result in run_pipeline to return a list of results, for every script called in the pipeline
+
 ## [0.2.0] - 2025-09-17
 - introduced a new parameter - "path". Set to RAM, the DATA_FILE and RESULT_FILE will be stored in /dev/shm. Set to DISK will be stored in /home/pyrmap/storage
 

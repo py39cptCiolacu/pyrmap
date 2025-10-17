@@ -75,6 +75,12 @@ metadata_file_cw <- function(input_size, dtype, path) {
    
 }
 
+metadata_flag_edit_w <- function(new_flag_value) {
+    m <- mmap(METADATA_FILE, mode=int32(), prot = mmapFlags("PROT_WRITE"))
+    m[1] <- new_flag_value
+    munmap(m)
+}
+
 data_file_cw <- function(data, data_file_size, dtype, path) {
     
     DATA_FILE <- get_data_file_path(path)

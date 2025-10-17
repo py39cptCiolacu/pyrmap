@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import mmap
-import struct
 import numpy as np
 from lib.metadata_manipulation import get_metadata_info, calculate_result_size, write_result_size 
 
