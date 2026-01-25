@@ -7,11 +7,11 @@ def train_model_mmap(input_data):
     n_features = 10
 
     total_elements = input_data.size
-    n_samples = total_elements // (n_features + 1)  # fiecare sample are 10 features + 1 label
+    n_samples = total_elements // (n_features + 1)
 
     X = input_data[:n_samples * n_features].reshape(n_samples, n_features)
     y = input_data[n_samples * n_features : n_samples * (n_features + 1)]
-    y = (y > 0.5).astype(int)  # transformăm în 0/1 pentru clasificare
+    y = (y > 0.5).astype(int) 
 
     model = LogisticRegression(max_iter=200)
     model.fit(X, y)

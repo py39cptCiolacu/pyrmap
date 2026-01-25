@@ -15,7 +15,7 @@
 source("../../lib/file_locations.R")
 
 METADATA_FILE <- "/dev/shm/metadata.bin"
-METADATA_FILE_SIZE <- 8 + 4 + 4 + 4 + 4
+METADATA_FILE_SIZE <- 4 + 4 + 4 + 4 + 4
 
 library(mmap)
 # c - create
@@ -119,7 +119,7 @@ get_result_file_size <- function(path) {
     metadata_flag <- m[1]
     if (metadata_flag != 1) stop("Python didn't write result size")
 
-    result_size <- m[4]
+    result_size <- m[5]
     munmap(m)
     return(result_size)
 
@@ -136,7 +136,7 @@ result_file_r <- function(dtype, path) {
     m <- mmap(RESULT_FILE, mode=dtype_mmap_mode, prot = mmapFlags("PROT_READ"))
     result <- m[]
     munmap(m)
-
+    
     return(result)
 }
 

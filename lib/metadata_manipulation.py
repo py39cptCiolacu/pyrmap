@@ -17,7 +17,7 @@ import struct
 import mmap
 
 METADATA_FILE = "/dev/shm/metadata.bin"
-METADATA_FILE_SIZE = 8 + 4 + 4 + 4 + 4 #8 for flag, 4 for data size, 4 for dtype, 4 for path ,4 for result size
+METADATA_FILE_SIZE = 4 + 4 + 4 + 4 + 4 #8 for flag, 4 for data size, 4 for dtype, 4 for path ,4 for result size
 
 DTYPE_MAP = {
         1: np.float32,
@@ -40,7 +40,7 @@ def get_metadata_info():
         input_data_size = np.frombuffer(mm.read(4), dtype=np.int32)[0]
         dtype_code = np.frombuffer(mm.read(4), dtype=np.int32)[0]
         path_code = np.frombuffer(mm.read(4), dtype=np.int32)[0]
-    
+
         mm.close()
         
         dtype = DTYPE_MAP[dtype_code]
@@ -63,7 +63,7 @@ def calculate_result_size(output):
 def write_result_size(result_size):
     with open(METADATA_FILE, "r+b") as f:
         mm = mmap.mmap(f.fileno(), METADATA_FILE_SIZE)
-        mm.seek(4+4)
+        # mm.seek(4+4+4+4)
         mm.write(struct.pack("i", result_size))
         mm.seek(0)
         mm.write(struct.pack("Q", 1))
