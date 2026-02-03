@@ -89,9 +89,12 @@ data_file_cw <- function(data, data_file_size, dtype, path) {
     dtype_size <- get_size_per_type(dtype)
 
     con <- file(DATA_FILE, "wb")
-    writeBin(rep(as.raw(0), data_file_size), con)
-    close(con)
+
     
+    seek(con, data_file_size-1, origin="start")
+    writeBin(as.raw(0), con)
+    close(con)
+
     dtype_mmap_mode = get_mmap_mode_per_type(dtype)
     m <- mmap(DATA_FILE, mode=dtype_mmap_mode, prot = mmapFlags("PROT_READ", "PROT_WRITE"))
 
